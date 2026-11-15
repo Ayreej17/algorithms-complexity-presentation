@@ -22,8 +22,7 @@ import {
 import F1_Slide1 from './components/CHAPTER 9 - Backtracking and Introduction to Computational Complexity/Slide1_Overview';
 import F1_Slide2 from './components/CHAPTER 9 - Backtracking and Introduction to Computational Complexity/Slide2_TimeSpaceAsymptotics';
 import F1_Slide3 from './components/CHAPTER 9 - Backtracking and Introduction to Computational Complexity/Slide3_ProcedureAnalysis';
-import F1_Slide4 from './components/CHAPTER 9 - Backtracking and Introduction to Computational Complexity/Slide4_ProsCons';
-import F1_Slide5 from './components/CHAPTER 9 - Backtracking and Introduction to Computational Complexity/Slide5_InteractiveGrowthLab';
+import F1_Slide4 from './components/CHAPTER 9 - Backtracking and Introduction to Computational Complexity/Slide4_InteractiveGrowthLab';
 
 // Folder 2: Brute-Force vs Backtracking
 import F2_Slide1 from './components/Brute-Force Search and Backtracking/Slide1_DefinitionVsBruteForce';
@@ -100,7 +99,7 @@ export default function App() {
       name: 'CHAPTER 9 - Backtracking and Introduction to Computational Complexity',
       shortName: 'Chapter 9: Intro',
       icon: BookOpen,
-      slides: [F1_Slide1, F1_Slide2, F1_Slide3, F1_Slide4, F1_Slide5],
+      slides: [F1_Slide1, F1_Slide2, F1_Slide3, F1_Slide4],
     },
     {
       id: 2,

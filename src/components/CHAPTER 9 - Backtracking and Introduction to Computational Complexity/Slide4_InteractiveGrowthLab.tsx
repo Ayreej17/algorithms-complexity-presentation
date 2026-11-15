@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Sliders, Sparkles, AlertTriangle, ShieldCheck } from 'lucide-react';
 
-export default function Slide5_InteractiveGrowthLab() {
+export default function Slide4_InteractiveGrowthLab() {
   const [n, setN] = useState<number>(10);
   const [activeNotation, setActiveNotation] = useState<'O' | 'Omega' | 'Theta'>('O');
 
