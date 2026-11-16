@@ -48,3 +48,7 @@ An interactive, mobile-responsive classroom presentation deck built with **React
    ```bash
    git clone [https://github.com/Ayreej17/algorithms-complexity-presentation.git](https://github.com/Ayreej17/algorithms-complexity-presentation.git)
    cd algorithms-complexity-presentation
+   on the same terminal, run this:
+   npm install
+   npm run dev
+   then follow the link or just type in your browser: localhost:5173
