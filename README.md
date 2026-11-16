@@ -1,75 +1,50 @@
-# React + TypeScript + Vite
+# 🧠 Algorithms & Computational Complexity — Interactive Web Presentation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive, mobile-responsive classroom presentation deck built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**. Designed to visualize Chapter 9 concepts—from backtracking mechanics and state-space trees to polynomial-time verification and the P vs. NP problem.
 
-Currently, two official plugins are available:
+🔗 **Live Presentation:** [ch9-backtracking-computational-complexity.vercel.app](https://ch9-backtracking-computational-complexity.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **10 Modular Topic Sections:** Structured cleanly by chapter topic and presenter section for effortless team collaboration.
+- **Live Algorithm Simulators:** Interactive step-by-step labs including N-Queens, Stack Maze Backtracking, State-Space Tree Explorer, Subset Sum Verifier ($O(N)$ vs. $O(2^N)$), Pruning Simulators, and Complexity Class Euler Diagrams.
+- **Interactive Quiz Mode:** Built-in classroom quiz view to test conceptual mastery after the lecture.
+- **Responsive & Mobile-Ready:** Built with dynamic viewport scaling (`h-dvh`), touch-friendly drawer navigation, keyboard arrow shortcuts (`←` / `→`), and fullscreen presentation mode.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 📚 Presentation Modules
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| # | Module / Folder | Focus Area |
+| :--- | :--- | :--- |
+| **01** | **Chapter 9: Intro** | Overview, Time/Space Asymptotics ($O, \Omega, \Theta$), and Growth Lab |
+| **02** | **Brute-Force vs. Backtracking** | Exhaustive search vs. constraint-based pruning & N-Queens |
+| **03** | **Choose, Explore, Undo** | Recursive triad paradigm, call stack mechanics, and maze traversal |
+| **04** | **State-Space Trees** | Tree definitions, depth/branching metrics, and live tree explorer |
+| **05** | **Subset Sum Problems** | Karp's formulation, bounding functions, and interactive solver |
+| **06** | **Include / Exclude Decisions** | Binary choice modeling, tree geometry, and bitmasks |
+| **07** | **Pruning & Exponential Growth** | Handling combinatorial explosion and pruning efficiency |
+| **08** | **Decision & Verification** | Polynomial-time certificates, code signatures, and Subset Sum verifier |
+| **09** | **P, NP, NP-Hard & NP-Complete** | Complexity classes, Cook-Levin reductions, and Euler hierarchy |
+| **10** | **Interactive Quiz** | End-of-chapter review and knowledge check |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠️ Tech Stack
 
-```
+- **Framework:** React 19 + TypeScript
+- **Build Tool:** Vite
+- **Styling:** Tailwind CSS
+- **Icons:** Lucide React
+- **Deployment:** Vercel (auto-deployed from `main`)
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Running Locally
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Ayreej17/algorithms-complexity-presentation.git](https://github.com/Ayreej17/algorithms-complexity-presentation.git)
+   cd algorithms-complexity-presentation
