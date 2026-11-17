@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -170,9 +170,17 @@ export default function App() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const mainScrollRef = useRef<HTMLElement>(null);
 
   const currentFolder = folders[currentFolderIndex];
   const totalSlidesInFolder = currentFolder.slides.length;
+
+  // Reset scroll to top on slide/folder change
+  useEffect(() => {
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTop = 0;
+    }
+  }, [currentFolderIndex, currentSlideIndex]);
 
   // Handle switching folder
   const handleSelectFolder = (folderIdx: number) => {
@@ -203,7 +211,6 @@ export default function App() {
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in an input
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
 
       if (e.key === 'ArrowRight') nextSlide();
@@ -228,9 +235,9 @@ export default function App() {
   const CurrentSlideComponent = currentFolder.slides[currentSlideIndex];
 
   return (
-    <div className="h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden flex flex-col font-sans select-none">
+    <div className="h-dvh w-full bg-slate-950 text-slate-100 overflow-hidden flex flex-col font-sans">
       {/* TOP HEADER: Named after each folder */}
-      <header className="h-16 bg-slate-900/95 backdrop-blur border-b border-slate-800 flex items-center justify-between px-4 md:px-6 z-50 flex-shrink-0">
+      <header className="h-14 md:h-16 bg-slate-900/95 backdrop-blur border-b border-slate-800 flex items-center justify-between px-4 md:px-6 z-50 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/30 text-sm">
             AG
@@ -287,11 +294,11 @@ export default function App() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 bg-slate-950/95 backdrop-blur z-50 p-6 overflow-y-auto md:hidden">
+        <div className="fixed inset-0 top-14 bg-slate-950/95 backdrop-blur z-50 p-4 sm:p-6 overflow-y-auto md:hidden">
           <div className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3">
             Select Topic / Folder:
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 pb-10">
             {folders.map((folder, idx) => {
               const Icon = folder.icon;
               const isActive = currentFolderIndex === idx;
@@ -315,20 +322,25 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN PRESENTATION CANVAS */}
-      <main className="flex-1 relative min-h-0 overflow-hidden px-4 md:px-10 py-2 flex flex-col">
-        <CurrentSlideComponent />
+      {/* MAIN PRESENTATION CANVAS: Scrollable on mobile, centered on desktop */}
+      <main
+        ref={mainScrollRef}
+        className="flex-1 relative min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 md:px-10 py-6 flex flex-col justify-start md:justify-center"
+      >
+        <div className="w-full my-auto">
+          <CurrentSlideComponent />
+        </div>
       </main>
 
       {/* FOOTER CONTROLS */}
-      <footer className="h-16 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between px-4 md:px-8 z-40 flex-shrink-0">
+      <footer className="h-14 md:h-16 bg-slate-900/95 border-t border-slate-800 flex items-center justify-between px-4 md:px-8 z-40 shrink-0">
         {/* Left: Active Folder Title */}
         <div className="text-xs text-slate-400 font-mono truncate max-w-xs md:max-w-md hidden sm:block">
           <strong className="text-indigo-400">{currentFolder.id}.</strong> {currentFolder.name}
         </div>
 
         {/* Center: Slide Indicators */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {totalSlidesInFolder > 1 &&
             currentFolder.slides.map((_, i) => (
               <button
@@ -336,14 +348,14 @@ export default function App() {
                 onClick={() => setCurrentSlideIndex(i)}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   currentSlideIndex === i
-                    ? 'w-6 bg-indigo-500 shadow-sm shadow-indigo-500/50'
+                    ? 'w-5 sm:w-6 bg-indigo-500 shadow-sm shadow-indigo-500/50'
                     : 'w-2 bg-slate-700 hover:bg-slate-500'
                 }`}
                 title={`Slide ${i + 1}`}
               />
             ))}
           {totalSlidesInFolder > 1 && (
-            <span className="text-[11px] font-mono text-slate-400 ml-2">
+            <span className="text-[11px] font-mono text-slate-400 ml-1 sm:ml-2">
               {currentSlideIndex + 1} / {totalSlidesInFolder}
             </span>
           )}
@@ -354,7 +366,7 @@ export default function App() {
           <button
             onClick={prevSlide}
             disabled={currentFolderIndex === 0 && currentSlideIndex === 0}
-            className="p-2 px-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all disabled:opacity-30 flex items-center gap-1.5 text-xs font-semibold"
+            className="p-2 px-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all disabled:opacity-30 flex items-center gap-1 text-xs font-semibold"
           >
             <ChevronLeft className="w-4 h-4" /> Prev
           </button>
@@ -364,7 +376,7 @@ export default function App() {
               currentFolderIndex === folders.length - 1 &&
               currentSlideIndex === totalSlidesInFolder - 1
             }
-            className="p-2 px-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all disabled:opacity-30 flex items-center gap-1.5 text-xs font-semibold shadow-md shadow-indigo-600/30"
+            className="p-2 px-3.5 sm:px-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all disabled:opacity-30 flex items-center gap-1 text-xs font-semibold shadow-md shadow-indigo-600/30"
           >
             Next <ChevronRight className="w-4 h-4" />
           </button>
