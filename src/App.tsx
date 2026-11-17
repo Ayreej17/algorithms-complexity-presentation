@@ -316,7 +316,7 @@ export default function App() {
       )}
 
       {/* MAIN PRESENTATION CANVAS */}
-      <main className="flex-1 relative overflow-hidden px-4 md:px-10 py-4 flex flex-col justify-center">
+      <main className="flex-1 relative min-h-0 overflow-hidden px-4 md:px-10 py-2 flex flex-col">
         <CurrentSlideComponent />
       </main>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -8,7 +8,9 @@ import {
   RotateCcw, 
   Award, 
   BookOpen, 
-  Sparkles
+  Sparkles,
+  ArrowUp,
+  ListFilter
 } from 'lucide-react';
 
 export interface QuizQuestion {
@@ -287,9 +289,18 @@ export default function QuizView() {
   // Current slide: 0 to 19 for Questions 1 to 20; 20 is the Answer Key slide!
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
+  const [keyFilter, setKeyFilter] = useState<'all' | 'incorrect' | 'correct'>('all');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const totalQuestions = quizQuestions.length; // 20
   const isAnswerKeySlide = currentSlide === totalQuestions; // Slide 20 (21st slide)
+
+  // Scroll to top whenever current slide changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [currentSlide]);
 
   const handleSelectOption = (qId: number, optionIdx: number) => {
     setSelectedAnswers(prev => ({
@@ -301,6 +312,20 @@ export default function QuizView() {
   const handleRetake = () => {
     setSelectedAnswers({});
     setCurrentSlide(0);
+    setKeyFilter('all');
+  };
+
+  const scrollToQuestionInKey = (qId: number) => {
+    const el = document.getElementById(`answer-key-q-${qId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Score calculation
@@ -320,10 +345,22 @@ export default function QuizView() {
 
   const badge = getScoreBadge(percentage);
 
+  // Filtered list for the Answer Key view
+  const displayedQuestionsInKey = quizQuestions.filter(q => {
+    const chosen = selectedAnswers[q.id];
+    const isCorrect = chosen === q.correctAnswer;
+    if (keyFilter === 'correct') return isCorrect;
+    if (keyFilter === 'incorrect') return !isCorrect;
+    return true;
+  });
+
   return (
-    <div className="flex flex-col h-full max-w-6xl mx-auto w-full justify-between overflow-y-auto py-4">
+    <div 
+      ref={scrollContainerRef}
+      className="flex flex-col h-full max-w-6xl mx-auto w-full overflow-y-auto px-2 py-4"
+    >
       {/* Quiz Header Navigation Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800 flex-shrink-0">
         <div>
           <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-0.5">
             <Sparkles className="w-4 h-4" /> Interactive Comprehensive Assessment
@@ -339,37 +376,54 @@ export default function QuizView() {
           </span>
 
           <button
-            onClick={() => setCurrentSlide(totalQuestions)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+            onClick={() => setCurrentSlide(isAnswerKeySlide ? 0 : totalQuestions)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 ${
               isAnswerKeySlide
-                ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                ? 'bg-slate-800 hover:bg-slate-700 text-indigo-300 border-indigo-500/40 shadow-sm'
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
             }`}
           >
-            {isAnswerKeySlide ? 'Viewing Answer Key' : 'Go to Answer Key →'}
+            {isAnswerKeySlide ? '← Back to Questions' : 'Go to Answer Key →'}
           </button>
         </div>
       </div>
 
       {/* Free-Slide Question Navigator Grid */}
-      <div className="py-2 overflow-x-auto">
+      <div className="py-2.5 overflow-x-auto no-scrollbar flex-shrink-0">
         <div className="flex items-center gap-1.5 min-w-max">
           {quizQuestions.map((q, idx) => {
             const isAnswered = selectedAnswers[q.id] !== undefined;
+            const isCorrect = selectedAnswers[q.id] === q.correctAnswer;
             const isCurrent = currentSlide === idx;
 
             return (
               <button
                 key={q.id}
-                onClick={() => setCurrentSlide(idx)}
-                className={`w-7 h-7 rounded-lg text-xs font-mono font-bold transition-all border ${
-                  isCurrent
+                onClick={() => {
+                  if (isAnswerKeySlide) {
+                    scrollToQuestionInKey(q.id);
+                  } else {
+                    setCurrentSlide(idx);
+                  }
+                }}
+                className={`relative w-7 h-7 rounded-lg text-xs font-mono font-bold transition-all border flex items-center justify-center ${
+                  isCurrent && !isAnswerKeySlide
                     ? 'bg-indigo-600 text-white border-indigo-400 scale-110 shadow-md shadow-indigo-600/30'
+                    : isAnswerKeySlide
+                    ? isCorrect
+                      ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/50'
+                      : isAnswered
+                      ? 'bg-rose-950/40 text-rose-300 border-rose-500/40 hover:bg-rose-900/50'
+                      : 'bg-slate-900 text-amber-400 border-slate-800 hover:border-slate-700'
                     : isAnswered
                     ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40'
                     : 'bg-slate-900 text-slate-500 border-slate-800 hover:border-slate-700 hover:text-slate-300'
                 }`}
-                title={`Question ${idx + 1}`}
+                title={
+                  isAnswerKeySlide
+                    ? `Jump to Question ${idx + 1} in Answer Key (${isCorrect ? 'Correct' : isAnswered ? 'Incorrect' : 'Unanswered'})`
+                    : `Go to Question ${idx + 1}`
+                }
               >
                 {idx + 1}
               </button>
@@ -379,19 +433,19 @@ export default function QuizView() {
           {/* Answer Key Button in Grid */}
           <button
             onClick={() => setCurrentSlide(totalQuestions)}
-            className={`px-2.5 h-7 rounded-lg text-xs font-mono font-bold transition-all border flex items-center gap-1 ${
+            className={`px-3 h-7 rounded-lg text-xs font-mono font-bold transition-all border flex items-center gap-1.5 ${
               isAnswerKeySlide
                 ? 'bg-purple-600 text-white border-purple-400 scale-105 shadow-md shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
             }`}
           >
-            <Award className="w-3.5 h-3.5" /> Key
+            <Award className="w-3.5 h-3.5" /> Answer Key
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 py-4">
+      <div className="flex-1 py-2">
         {!isAnswerKeySlide ? (
           /* Question Slide */
           (() => {
@@ -399,7 +453,7 @@ export default function QuizView() {
             const chosen = selectedAnswers[currentQ.id];
 
             return (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6">
+              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 my-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
                   <span className="text-xs font-mono text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 font-bold uppercase tracking-wider">
                     Question {currentSlide + 1} of {totalQuestions} • {currentQ.topic}
@@ -457,7 +511,7 @@ export default function QuizView() {
                   </button>
 
                   <div className="text-xs text-slate-500 font-mono hidden sm:block">
-                    {chosen !== undefined ? 'Answer Selected' : 'Not yet answered'}
+                    {chosen !== undefined ? '✓ Answer Selected' : '⚪ Not yet answered'}
                   </div>
 
                   <button
@@ -472,8 +526,8 @@ export default function QuizView() {
             );
           })()
         ) : (
-          /* SLIDE 21: The Answer Key Slide! */
-          <div className="space-y-6">
+          /* SLIDE 21: The Full Answer Key Slide! */
+          <div className="space-y-6 pt-2 pb-12">
             {/* Score Summary Banner */}
             <div className="bg-slate-900/90 border border-indigo-500/30 rounded-2xl p-6 md:p-8">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -484,7 +538,7 @@ export default function QuizView() {
                   <h3 className="text-2xl md:text-3xl font-extrabold text-white">
                     Quiz Score: <span className="text-indigo-400 font-mono">{score}</span> / {totalQuestions}
                   </h3>
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex items-center gap-2 pt-1 justify-center md:justify-start">
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">
                       {badge.label}
                     </span>
@@ -494,18 +548,18 @@ export default function QuizView() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="text-center bg-slate-950 p-4 rounded-xl border border-slate-800">
-                    <span className="text-3xl font-black font-mono text-emerald-400">{score}</span>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="text-center bg-slate-950 p-3 sm:p-4 rounded-xl border border-slate-800 min-w-[70px]">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">{score}</span>
                     <span className="text-[10px] text-slate-500 block uppercase font-bold mt-0.5">Correct</span>
                   </div>
-                  <div className="text-center bg-slate-950 p-4 rounded-xl border border-slate-800">
-                    <span className="text-3xl font-black font-mono text-rose-400">{totalQuestions - score}</span>
-                    <span className="text-[10px] text-slate-500 block uppercase font-bold mt-0.5">Errors/Missed</span>
+                  <div className="text-center bg-slate-950 p-3 sm:p-4 rounded-xl border border-slate-800 min-w-[70px]">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-rose-400">{totalQuestions - score}</span>
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold mt-0.5">Missed</span>
                   </div>
                   <button
                     onClick={handleRetake}
-                    className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all"
+                    className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all border border-slate-700"
                     title="Retake Quiz"
                   >
                     <RotateCcw className="w-4 h-4" /> Retake
@@ -514,80 +568,146 @@ export default function QuizView() {
               </div>
             </div>
 
-            {/* Answer Key Question-by-Question Breakdown */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            {/* Answer Key Filter & Jump Navigation */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+              <div className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider">
                 <BookOpen className="w-4 h-4 text-indigo-400" />
-                Comprehensive 20-Question Answer Key & Explanations
-              </h4>
+                <span>All 20 Questions Breakdown</span>
+              </div>
 
-              <div className="space-y-3">
-                {quizQuestions.map((q, idx) => {
-                  const letters = ['A', 'B', 'C', 'D'];
-                  const chosen = selectedAnswers[q.id];
-                  const isCorrect = chosen === q.correctAnswer;
-                  const isUnanswered = chosen === undefined;
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-slate-500 flex items-center gap-1 mr-1 hidden sm:inline-flex">
+                  <ListFilter className="w-3.5 h-3.5" /> Filter:
+                </span>
+                <button
+                  onClick={() => setKeyFilter('all')}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-xs font-bold transition-all ${
+                    keyFilter === 'all'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  All ({totalQuestions})
+                </button>
+                <button
+                  onClick={() => setKeyFilter('correct')}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-xs font-bold transition-all ${
+                    keyFilter === 'correct'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  Correct ({score})
+                </button>
+                <button
+                  onClick={() => setKeyFilter('incorrect')}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-xs font-bold transition-all ${
+                    keyFilter === 'incorrect'
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  Missed ({totalQuestions - score})
+                </button>
+              </div>
+            </div>
 
-                  return (
-                    <div
-                      key={q.id}
-                      className={`bg-slate-900/80 border rounded-2xl p-4 md:p-5 transition-all ${
-                        isCorrect
-                          ? 'border-emerald-500/30'
-                          : isUnanswered
-                          ? 'border-amber-500/30'
-                          : 'border-rose-500/30'
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-bold text-white">
-                          #{idx + 1}. {q.question}
+            {/* Question Cards 1 through 20 */}
+            <div className="space-y-4">
+              {displayedQuestionsInKey.map((q) => {
+                const letters = ['A', 'B', 'C', 'D'];
+                const chosen = selectedAnswers[q.id];
+                const isCorrect = chosen === q.correctAnswer;
+                const isUnanswered = chosen === undefined;
+
+                return (
+                  <div
+                    key={q.id}
+                    id={`answer-key-q-${q.id}`}
+                    className={`bg-slate-900/80 border rounded-2xl p-5 md:p-6 transition-all scroll-mt-4 ${
+                      isCorrect
+                        ? 'border-emerald-500/30'
+                        : isUnanswered
+                        ? 'border-amber-500/30'
+                        : 'border-rose-500/30'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-md bg-indigo-500/20 text-indigo-300 font-mono font-bold text-xs flex items-center justify-center border border-indigo-500/30">
+                          {q.id}
                         </span>
-
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {isCorrect && (
-                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold flex items-center gap-1 border border-emerald-500/30 font-mono">
-                              <CheckCircle2 className="w-3.5 h-3.5" /> CORRECT
-                            </span>
-                          )}
-                          {!isCorrect && !isUnanswered && (
-                            <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[11px] font-bold flex items-center gap-1 border border-rose-500/30 font-mono">
-                              <XCircle className="w-3.5 h-3.5" /> INCORRECT
-                            </span>
-                          )}
-                          {isUnanswered && (
-                            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold flex items-center gap-1 border border-amber-500/30 font-mono">
-                              <AlertCircle className="w-3.5 h-3.5" /> UNANSWERED
-                            </span>
-                          )}
-                        </div>
+                        <span className="text-xs font-mono text-slate-400">
+                          {q.topic}
+                        </span>
                       </div>
 
-                      {/* Choices summary */}
-                      <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono space-y-1 mb-2.5">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Your Selection:</span>
-                          <span className={isCorrect ? 'text-emerald-400 font-bold' : isUnanswered ? 'text-amber-400' : 'text-rose-400 font-bold'}>
-                            {chosen !== undefined ? `${letters[chosen]}: ${q.options[chosen]}` : '(None chosen)'}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {isCorrect && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold flex items-center gap-1 border border-emerald-500/30 font-mono">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> CORRECT
                           </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Correct Answer:</span>
-                          <span className="text-emerald-400 font-bold">
-                            {letters[q.correctAnswer]}: {q.options[q.correctAnswer]}
+                        )}
+                        {!isCorrect && !isUnanswered && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[11px] font-bold flex items-center gap-1 border border-rose-500/30 font-mono">
+                            <XCircle className="w-3.5 h-3.5" /> INCORRECT
                           </span>
-                        </div>
-                      </div>
+                        )}
+                        {isUnanswered && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold flex items-center gap-1 border border-amber-500/30 font-mono">
+                            <AlertCircle className="w-3.5 h-3.5" /> UNANSWERED
+                          </span>
+                        )}
 
-                      {/* Detailed Explanation */}
-                      <div className="text-xs text-slate-300 bg-slate-900 p-2.5 rounded-lg border border-slate-800/80">
-                        <strong className="text-indigo-300">Explanation: </strong>
-                        {q.explanation}
+                        <button
+                          onClick={() => setCurrentSlide(q.id - 1)}
+                          className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white text-[10px] font-mono border border-slate-700"
+                          title="Open this question in slide view"
+                        >
+                          View Slide ↗
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+
+                    <h4 className="text-sm md:text-base font-bold text-white mb-3 leading-relaxed">
+                      {q.question}
+                    </h4>
+
+                    {/* Choices summary */}
+                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs font-mono space-y-1.5 mb-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-slate-500 flex-shrink-0">Your Selection:</span>
+                        <span className={`text-right ${isCorrect ? 'text-emerald-400 font-bold' : isUnanswered ? 'text-amber-400' : 'text-rose-400 font-bold'}`}>
+                          {chosen !== undefined ? `${letters[chosen]}: ${q.options[chosen]}` : '(None chosen)'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-start gap-2 pt-1 border-t border-slate-900">
+                        <span className="text-slate-500 flex-shrink-0">Correct Answer:</span>
+                        <span className="text-emerald-400 font-bold text-right">
+                          {letters[q.correctAnswer]}: {q.options[q.correctAnswer]}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Detailed Explanation */}
+                    <div className="text-xs text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 leading-relaxed">
+                      <strong className="text-indigo-300">Explanation: </strong>
+                      {q.explanation}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Back to Top Button */}
+            <div className="pt-4 flex justify-center">
+              <button
+                onClick={scrollToTop}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-2 border border-slate-700 shadow-lg"
+              >
+                <ArrowUp className="w-4 h-4" /> Scroll to Top of Answer Key
+              </button>
             </div>
           </div>
         )}
