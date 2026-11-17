@@ -300,6 +300,11 @@ export default function QuizView() {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
+    const mainEl = scrollContainerRef.current?.closest('main');
+    if (mainEl) {
+      mainEl.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
   }, [currentSlide]);
 
   const handleSelectOption = (qId: number, optionIdx: number) => {
@@ -326,6 +331,11 @@ export default function QuizView() {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    const mainEl = scrollContainerRef.current?.closest('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Score calculation
@@ -357,7 +367,7 @@ export default function QuizView() {
   return (
     <div 
       ref={scrollContainerRef}
-      className="flex flex-col h-full max-w-6xl mx-auto w-full overflow-y-auto px-2 py-4"
+      className="flex flex-col w-full max-w-6xl mx-auto px-2 py-2"
     >
       {/* Quiz Header Navigation Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800 flex-shrink-0">

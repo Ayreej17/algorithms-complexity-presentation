@@ -322,10 +322,10 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN PRESENTATION CANVAS: Scrollable on mobile, centered on desktop */}
+      {/* MAIN PRESENTATION CANVAS: Scrollable and starts at top to avoid negative-margin clipping */}
       <main
         ref={mainScrollRef}
-        className="flex-1 relative min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 md:px-10 py-6 flex flex-col justify-start md:justify-center"
+        className="flex-1 relative min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 md:px-10 py-6 flex flex-col justify-start"
       >
         <div className="w-full my-auto">
           <CurrentSlideComponent />
